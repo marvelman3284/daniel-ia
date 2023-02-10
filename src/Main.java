@@ -1,60 +1,78 @@
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
 
 public class Main extends JFrame {
 
-    public static int wpm;
-    public static float size;
-    public static Font font;
+    public static int wpm, size;
+    public static String font;
     public static Color color;
-    public static GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-    public static JFrame frame = new JFrame("Reading Test");
 
-    public static JPanel panel = new JPanel();
     public static GridBagConstraints c = new GridBagConstraints();
 
-    public static void main(String[] args){
+    public static String[] words = {"test", "clear", "read", "find", "lose", "daniel", "carey"};
+    public static boolean test = false;
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Reading Test");
+
+        JPanel panel = new JPanel();
+
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(650,500);
+        frame.setSize(650, 500);
+        frame.setVisible(true);
 
         panel.setLayout(new GridBagLayout());
 
+        gameLoop(panel, frame);
+    }
+
+    public static void gameLoop(JPanel panel, JFrame frame) {
         createSettings(panel, frame);
-        frame.setVisible(true);
+
+        while (!test) {
+            wait(1);
+        }
+
+        clean(panel);
+        readingTest(panel, frame, words, 100, size, color, font);
+
+        test = false;
+        gameLoop(panel, frame);
+    }
+
+    public static void clean(JPanel panel) {
+        panel.removeAll();
+        panel.validate();
+        panel.repaint();
     }
 
     public static void wait(int time) {
         try {
             Thread.sleep(time);
-        } catch ( Exception e ) {
+        } catch (Exception e) {
             System.out.println(e);
         }
     }
 
-    public static void readingTest(String[] words, int wpm, float size, Color color, Font font) {
-        frame.remove(panel);
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
-        JLabel label1 = new JLabel("test");
-        panel.add(label1);
-        frame.add(panel);
+    public static void readingTest(JPanel panel, JFrame frame, String[] words, int wpm, int size, Color color, String font) {
+        System.out.println(font);
         for (String s : words) {
             JLabel label = new JLabel(s);
-            System.out.println(43);
-//            label.setForeground(color);
+            label.setForeground(color);
 
-//            label.setFont(font);
-//            label.setFont(label.getFont().deriveFont(size));
+            label.setFont(new Font(font, Font.PLAIN, size));
+
             c.fill = GridBagConstraints.HORIZONTAL;
             c.gridy = 5;
             c.gridx = 1;
+
             panel.add(label, c);
             frame.add(panel);
             frame.setVisible(true);
-            wait(1000);
-            panel.remove(label);
+
+            wait(wpm / 60 * 1000); // multiply by 60 to go from sec to min then by 1000 to go to ms
+
+            clean(panel);
         }
     }
 
@@ -85,7 +103,7 @@ public class Main extends JFrame {
         JButton sizeSubmit = new JButton("Submit");
         JLabel sizeLabel = new JLabel("Size(px):");
 
-        sizeSubmit.addActionListener(e -> size = Float.parseFloat(sizeText.getText()));
+        sizeSubmit.addActionListener(e -> size = Integer.parseInt(sizeText.getText()));
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -136,43 +154,11 @@ public class Main extends JFrame {
         panel.add(colorSubmit, c);
 
         JButton fontSubmit = new JButton("Submit");
-        String[] fonts = {"open sans", "times new roman", "jet brains mono", "roboto"};
+        String[] fonts = {"Iosevka", "Hack", "Jetbrains Mono", "Fira Code"};
         final JComboBox<String> fontChoice = new JComboBox<>(fonts);
         JLabel fontLabel = new JLabel("Font:");
 
-        fontSubmit.addActionListener(e -> {
-            switch (fontChoice.getSelectedItem().toString()) {
-                case "jet brains mono" -> {
-                    try {
-                        font = Font.createFont(Font.TRUETYPE_FONT, new File("~/Coding/daniel/JetBrains_Mono/static/JetBrainsMono-Regular.ttf"));
-                    } catch (FontFormatException | IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-                case "roboto" -> {
-                    try {
-                        font = Font.createFont(Font.TRUETYPE_FONT, new File("~/Coding/daniel/Roboto-Black.ttf"));
-                    } catch (FontFormatException | IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-                case "open sans" -> {
-                    try {
-                        font = Font.createFont(Font.TRUETYPE_FONT, new File("Open_Sans/static/OpenSans/OpenSans-Regular.ttf"));
-                    } catch (FontFormatException | IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-                case "comic sans" -> {
-                    try {
-                        font = Font.createFont(Font.TRUETYPE_FONT, new File("~/Coding/daniel/Comic_Neue/ComicNeue-Regular.ttf"));
-                    } catch (FontFormatException | IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-            }
-            ge.registerFont(font);
-        });
+        fontSubmit.addActionListener(e -> font = fontChoice.getSelectedItem().toString());
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
@@ -191,34 +177,7 @@ public class Main extends JFrame {
         panel.add(fontSubmit, c);
 
         JButton submit = new JButton("Save settings & start");
-        submit.addActionListener(e -> {
-            String[] words = {"test", "clear", "read", "find", "lose", "daniel", "carey"};
-
-
-
-            for (String s : words) {
-                JLabel label = new JLabel(s);
-
-//            label.setForeground(color);
-
-//            label.setFont(font);
-//            label.setFont(label.getFont().deriveFont(size));
-
-
-                panel.add(label);
-                panel.validate();
-                panel.repaint();
-
-                frame.add(panel);
-                frame.validate();
-                frame.repaint();
-
-                frame.setVisible(true);
-                wait(100);
-//                panel.remove(label);
-            }
-            frame.add(panel);
-        }); // call start game function
+        submit.addActionListener(e -> test = true); // call start game function
 
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridy = 4;
